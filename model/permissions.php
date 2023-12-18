@@ -1,18 +1,18 @@
 <?php
-require_once 'db.php';
-class Bank {
+
+class Permission {
     private $id;
     private $name;
-    private $logo;
+    private $description;
 
     // Constructor
-    public function __construct($id, $name, $logo) {
+    public function __construct($id, $name, $description) {
         $this->id = $id;
         $this->name = $name;
-        $this->logo = $logo;
+        $this->description = $description;
     }
 
-    // Getters and setters for properties (you can generate these automatically)
+    // Getters and setters for properties
 
     public function getId() {
         return $this->id;
@@ -22,19 +22,19 @@ class Bank {
         return $this->name;
     }
 
-    public function getLogo() {
-        return $this->logo;
+    public function getDescription() {
+        return $this->description;
     }
 
     // Methods for CRUD operations
 
     // Create
-    public static function create($name, $logo) {
+    public static function create($name, $description) {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("INSERT INTO bank (name, logo) VALUES (:name, :logo)");
+        $stmt = $db->prepare("INSERT INTO permission (name, description) VALUES (:name, :description)");
         $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':logo', $logo);
+        $stmt->bindParam(':description', $description);
 
         return $stmt->execute();
     }
@@ -43,7 +43,7 @@ class Bank {
     public static function getById($id) {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("SELECT * FROM bank WHERE id = :id");
+        $stmt = $db->prepare("SELECT * FROM permission WHERE id = :id");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
 
@@ -54,9 +54,9 @@ class Bank {
     public function update() {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("UPDATE bank SET name = :name, logo = :logo WHERE id = :id");
+        $stmt = $db->prepare("UPDATE permission SET name = :name, description = :description WHERE id = :id");
         $stmt->bindParam(':name', $this->name);
-        $stmt->bindParam(':logo', $this->logo);
+        $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':id', $this->id);
 
         return $stmt->execute();
@@ -66,7 +66,7 @@ class Bank {
     public function delete() {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("DELETE FROM bank WHERE id = :id");
+        $stmt = $db->prepare("DELETE FROM permission WHERE id = :id");
         $stmt->bindParam(':id', $this->id);
 
         return $stmt->execute();

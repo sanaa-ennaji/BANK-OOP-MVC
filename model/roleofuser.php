@@ -1,13 +1,15 @@
 <?php
 
-class CompteCourant {
+class RoleOfUser {
     private $id;
-    private $accountId;
+    private $roleId;
+    private $userId;
 
     // Constructor
-    public function __construct($id, $accountId) {
+    public function __construct($id, $roleId, $userId) {
         $this->id = $id;
-        $this->accountId = $accountId;
+        $this->roleId = $roleId;
+        $this->userId = $userId;
     }
 
     // Getters and setters for properties
@@ -16,18 +18,23 @@ class CompteCourant {
         return $this->id;
     }
 
-    public function getAccountId() {
-        return $this->accountId;
+    public function getRoleId() {
+        return $this->roleId;
+    }
+
+    public function getUserId() {
+        return $this->userId;
     }
 
     // Methods for CRUD operations
 
     // Create
-    public static function create($accountId) {
+    public static function create($roleId, $userId) {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("INSERT INTO compte_courant (account_id) VALUES (:accountId)");
-        $stmt->bindParam(':accountId', $accountId);
+        $stmt = $db->prepare("INSERT INTO roleOfUser (role_id, user_id) VALUES (:roleId, :userId)");
+        $stmt->bindParam(':roleId', $roleId);
+        $stmt->bindParam(':userId', $userId);
 
         return $stmt->execute();
     }
@@ -36,7 +43,7 @@ class CompteCourant {
     public static function getById($id) {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("SELECT * FROM compte_courant WHERE id = :id");
+        $stmt = $db->prepare("SELECT * FROM roleOfUser WHERE id = :id");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
 
@@ -47,8 +54,9 @@ class CompteCourant {
     public function update() {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("UPDATE compte_courant SET account_id = :accountId WHERE id = :id");
-        $stmt->bindParam(':accountId', $this->accountId);
+        $stmt = $db->prepare("UPDATE roleOfUser SET role_id = :roleId, user_id = :userId WHERE id = :id");
+        $stmt->bindParam(':roleId', $this->roleId);
+        $stmt->bindParam(':userId', $this->userId);
         $stmt->bindParam(':id', $this->id);
 
         return $stmt->execute();
@@ -58,7 +66,7 @@ class CompteCourant {
     public function delete() {
         $db = Database::getInstance()->getConnection();
 
-        $stmt = $db->prepare("DELETE FROM compte_courant WHERE id = :id");
+        $stmt = $db->prepare("DELETE FROM roleOfUser WHERE id = :id");
         $stmt->bindParam(':id', $this->id);
 
         return $stmt->execute();

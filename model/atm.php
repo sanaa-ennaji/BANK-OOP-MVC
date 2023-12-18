@@ -1,130 +1,91 @@
 <?php
 
-require_once("db.php");
+class ATM {
+    private $id;
+    private $longitude;
+    private $latitude;
+    private $address;
+    private $bankId;
 
-class Atm extends Db {
-
-    public function add($id, $address, $longitude, $latitude, $bankId) {
-        $db = $this->connect();
-
-        try {
-            $sql = "INSERT INTO atm VALUES (:id, :address, :longitude, :latitude, :bankId)";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(":id", $id);
-            $stmt->bindParam(":address", $address);
-            $stmt->bindParam(":longitude", $longitude);
-            $stmt->bindParam(":latitude", $latitude);
-            $stmt->bindParam(":bankId", $bankId);
-            $stmt->execute();
-        } catch (PDOException $e) {
-            die("Error: " . $e->getMessage());
-        }
+    // Constructor
+    public function __construct($id, $longitude, $latitude, $address, $bankId) {
+        $this->id = $id;
+        $this->longitude = $longitude;
+        $this->latitude = $latitude;
+        $this->address = $address;
+        $this->bankId = $bankId;
     }
 
-    public function display() {
-        $db = $this->connect();
+    // Getters and setters for properties
 
-        try {
-            $sql = "SELECT * FROM atm";
-            $query = $db->query($sql);
-            $data = $query->fetchAll(PDO::FETCH_ASSOC);
-            return $data;
-        } catch (PDOException $e) {
-            die("Error: " . $e->getMessage());
-        }
+    public function getId() {
+        return $this->id;
     }
 
-    public function search($id) {
-        $db = $this->connect();
-
-        try {
-            $sql = "SELECT * FROM atm WHERE id = :id";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(":id", $id);
-            $stmt->execute();
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $data;
-        } catch (PDOException $e) {
-            die("Error: " . $e->getMessage());
-        }
+    public function getLongitude() {
+        return $this->longitude;
     }
 
-    public function edit($id, $address, $longitude, $latitude, $bankId) {
-        $db = $this->connect();
-
-
-        try {
-            $sql = "UPDATE atm SET address = :address, longitude = :longitude, latitude = :latitude, bank_id = :bank_id WHERE id = :id";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(":address", $address);
-            $stmt->bindParam(":longitude", $longitude);
-            $stmt->bindParam(":latitude", $latitude);
-            $stmt->bindParam(":bank_id", $bankId);
-            $stmt->bindParam(":id", $id);
-            $stmt->execute();
-        } catch (PDOException $e) {
-            die("Error: " . $e->getMessage());
-        }
+    public function getLatitude() {
+        return $this->latitude;
     }
 
-    public function delete($id) {
-        $db = $this->connect();
-
-        try {
-            $sql = "DELETE FROM atm WHERE id = :id";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(":id", $id);
-            $stmt->execute();
-        } catch (PDOException $e) {
-            die("Error: " . $e->getMessage());
-        }
-    }
-    public function totalRecords(){
-        $db = $this->connect();
-
-        try {
-            $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM atm ");
-            $stmt->execute();
-            $records = $stmt->fetch();
-            $data = $records['allcount'];
-            return $data;
-        } catch (PDOException $e){
-            die("Error: " . $e->getMessage());
-        }
+    public function getAddress() {
+        return $this->address;
     }
 
-    public function totalRecordwithFilter($searchQuery, $searchArray){
-        $db = $this->connect();
-
-        try {
-            $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM atm WHERE 1 ".$searchQuery);
-            $stmt->execute($searchArray);
-            $records = $stmt->fetch();
-            $data = $records['allcount'];
-            return $data;
-        } catch (PDOException $e){
-            die("Error: " . $e->getMessage());
-        }
+    public function getBankId() {
+        return $this->bankId;
     }
 
-    public function filteredRecordwithSorting($searchQuery, $searchArray, $columnName, $columnSortOrder, $row, $rowperpage){
-        $db = $this->connect();
+    // Methods for CRUD operations
 
-        try {
-            $stmt = $db->prepare("SELECT * FROM atm WHERE 1 ".$searchQuery." ORDER BY ".$columnName." ".$columnSortOrder." LIMIT :limit,:offset");
+    // Create
+    public static function create($longitude, $latitude, $address, $bankId) {
+        $db = Database::getInstance()->getConnection();
 
-            foreach ($searchArray as $key=>$search) {
-                $stmt->bindValue(':'.$key, $search,PDO::PARAM_STR);
-            }
+        $stmt = $db->prepare("INSERT INTO atm (longitude, latitude, address, bank_id) VALUES (:longitude, :latitude, :address, :bankId)");
+        $stmt->bindParam(':longitude', $longitude);
+        $stmt->bindParam(':latitude', $latitude);
+        $stmt->bindParam(':address', $address);
+        $stmt->bindParam(':bankId', $bankId);
 
-            $stmt->bindValue(':limit', (int)$row, PDO::PARAM_INT);
-            $stmt->bindValue(':offset', (int)$rowperpage, PDO::PARAM_INT);
-            $stmt->execute();
-            $data = $stmt->fetchAll();
-            return $data;
-        } catch (PDOException $e){
-            die("Error: " . $e->getMessage());
-        }
+        return $stmt->execute();
+    }
+
+    // Read
+    public static function getById($id) {
+        $db = Database::getInstance()->getConnection();
+
+        $stmt = $db->prepare("SELECT * FROM atm WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Update
+    public function update() {
+        $db = Database::getInstance()->getConnection();
+
+        $stmt = $db->prepare("UPDATE atm SET longitude = :longitude, latitude = :latitude, address = :address, bank_id = :bankId WHERE id = :id");
+        $stmt->bindParam(':longitude', $this->longitude);
+        $stmt->bindParam(':latitude', $this->latitude);
+        $stmt->bindParam(':address', $this->address);
+        $stmt->bindParam(':bankId', $this->bankId);
+        $stmt->bindParam(':id', $this->id);
+
+        return $stmt->execute();
+    }
+
+    // Delete
+    public function delete() {
+        $db = Database::getInstance()->getConnection();
+
+        $stmt = $db->prepare("DELETE FROM atm WHERE id = :id");
+        $stmt->bindParam(':id', $this->id);
+
+        return $stmt->execute();
     }
 }
 
