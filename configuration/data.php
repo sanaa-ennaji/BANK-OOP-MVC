@@ -6,8 +6,8 @@ $password = "new_password";
 $db = "bank8";
 
 try{
-$pdo = new PDO("mysql:host=$host",$username,$password);
-$pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO("mysql:host=$host;dbname=$db", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $sql = "CREATE DATABASE IF NOT EXISTS $db";
 $pdo->exec($sql);
@@ -104,12 +104,12 @@ $sqltb = "CREATE TABLE IF NOT EXISTS permissionOfRole (
 $sqltb = "CREATE TABLE IF NOT EXISTS compte_courant (
     id VARCHAR(50) PRIMARY KEY,
     account_id VARCHAR(50),
-    FOREIGN KEY (_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (account_id) REFERENCES account(id) ON DELETE CASCADE ON UPDATE CASCADE
 )";
 
 $sqltb = "CREATE TABLE IF NOT EXISTS compte_epargne (
     id VARCHAR(50) PRIMARY KEY,
-    user_id VARCHAR(50),
+    account_id VARCHAR(50),
     FOREIGN KEY (account_id) REFERENCES account(id) ON DELETE CASCADE ON UPDATE CASCADE
 )";
 
@@ -120,9 +120,6 @@ $sqltb = "CREATE TABLE IF NOT EXISTS transaction (
     compte_courant_id VARCHAR(50),
     FOREIGN KEY (compte_courant_id) REFERENCES compte_courant(id) ON DELETE CASCADE ON UPDATE CASCADE
 )";
-
-
-
 
 }catch(PDOException $e){
     echo"connection failed" .$e->getMessage();

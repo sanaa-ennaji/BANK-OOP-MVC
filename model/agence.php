@@ -2,15 +2,17 @@
 
     require_once("db.php");
 
-    class Bank extends Db {
+    class Agency extends Db {
         
-        public function add($id, $name, $logo){
+        public function add($id, $longitude, $latitude, $bank_id, $address_id){
             try {
-                $sql = "INSERT INTO bank VALUES (:id, :name, :logo)";
+                $sql = "INSERT INTO agency VALUES (:id, :longitude, :latitude, :bank_id, :address_id)";
                 $stmt = $this->connect()->prepare($sql); 
                 $stmt->bindParam(":id", $id);
-                $stmt->bindParam(":name", $name);
-                $stmt->bindParam(":logo", $logo);
+                $stmt->bindParam(":longitude", $longitude);
+                $stmt->bindParam(":latitude", $latitude);
+                $stmt->bindParam(":bank_id", $bank_id);
+                $stmt->bindParam(":address_id", $address_id);
                 $stmt->execute();
             } catch (PDOException $e){
                 die("Error: ". $e->getMessage());
@@ -19,7 +21,7 @@
 
         public function display(){
             try {
-                $sql = "SELECT * FROM bank";
+                $sql = "SELECT * FROM agency";
                 $query = $this->connect()->query($sql);
                 $data = $query->fetchAll(PDO::FETCH_ASSOC);
                 return $data;
@@ -30,7 +32,7 @@
 
         public function search($id){
             try {
-                $sql = "SELECT * FROM bank WHERE id = :id";
+                $sql = "SELECT * FROM agency WHERE id = :id";
                 $stmt = $this->connect()->prepare($sql);
                 $stmt->bindParam(":id", $id);
                 $stmt->execute();
@@ -41,12 +43,32 @@
             }
         }
 
-        public function edit($id, $name, $logo){
+        public function searchAll($id){
+            $db = $this->connect();
+
             try {
-                $sql = "UPDATE bank SET name = :name, logo = :logo WHERE id = :id";
+                $sql = "SELECT agency.id, agency.longitude, agency.latitude, agency.bank_id, address.city, address.district, address.street, address.postal_code, address.email, address.telephone FROM agency JOIN address ON agency.address_id = address.id WHERE agency.id = :id";
+
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam(":id", $id);
+
+                $stmt->execute();
+
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+
+            } catch (PDOException $e) {
+                die("Error: " . $e->getMessage());
+            }
+
+        }
+
+        public function edit($id, $longitude, $latitude, $bank_id){
+            try {
+                $sql = "UPDATE agency SET longitude = :longitude, latitude = :latitude, bank_id = :bank_id WHERE id = :id";
                 $stmt = $this->connect()->prepare($sql);
-                $stmt->bindParam(":name", $name);
-                $stmt->bindParam(":logo", $logo);
+                $stmt->bindParam(":longitude", $longitude);
+                $stmt->bindParam(":latitude", $latitude);
+                $stmt->bindParam(":bank_id", $bank_id);
                 $stmt->bindParam(":id", $id);
                 $stmt->execute();
             } catch (PDOException $e){
@@ -57,7 +79,7 @@
 
         public function delete($id){
             try {
-                $sql = "DELETE FROM bank WHERE id = :id";
+                $sql = "DELETE FROM agency WHERE id = :id";
                 $stmt = $this->connect()->prepare($sql);
                 $stmt->bindParam(":id", $id);
                 $stmt->execute();
@@ -65,12 +87,11 @@
                 die("Error: " . $e->getMessage());
             }
         }
-
         public function totalRecords(){
             $db = $this->connect();
 
             try {
-                $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM bank ");
+                $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM agency");
                 $stmt->execute();
                 $records = $stmt->fetch();
                 $data = $records['allcount'];
@@ -84,7 +105,7 @@
             $db = $this->connect();
 
             try {
-                $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM bank WHERE 1 ".$searchQuery);
+                $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM agency WHERE 1 ".$searchQuery);
                 $stmt->execute($searchArray);
                 $records = $stmt->fetch();
                 $data = $records['allcount'];
@@ -98,7 +119,7 @@
             $db = $this->connect();
 
             try {
-                $stmt = $db->prepare("SELECT * FROM bank WHERE 1 ".$searchQuery." ORDER BY ".$columnName." ".$columnSortOrder." LIMIT :limit,:offset");
+                $stmt = $db->prepare("SELECT * FROM agency WHERE 1 ".$searchQuery." ORDER BY ".$columnName." ".$columnSortOrder." LIMIT :limit,:offset");
 
                 foreach ($searchArray as $key=>$search) {
                     $stmt->bindValue(':'.$key, $search,PDO::PARAM_STR);
@@ -113,8 +134,6 @@
                 die("Error: " . $e->getMessage());
             }
         }
-
-        
     }
 
 ?>
