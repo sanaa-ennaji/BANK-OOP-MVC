@@ -1,24 +1,34 @@
 <?php
-    
-    define("host" , "localhost");
-    define("user","root");
-    define("password","new_password");
-    define("db","bank8");
 
-    class Db {
+class Database {
+    private static $instance;
+    private $pdo;
 
-        public function connect(){
+    private function __construct() {
+        $host = "localhost";
+        $username = "root";
+        $password = "new_password";
+        $db = "bank8";
 
-
-            try{
-                $dsn= "mysql:host=" .host .";dbname=" . db;
-             return new PDO($dsn,user,password);
-            }catch(PDOException $e){
-                die("Error:" . $e->getcode());
-        
-            }
+        try {
+            $this->pdo = new PDO("mysql:host=$host;dbname=$db", $username, $password);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+            die();
         }
     }
-age
+
+    public static function getInstance() {
+        if (!self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+     public function getConnection() {
+        return $this->pdo;
+    }
+}
 
 ?>

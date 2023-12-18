@@ -127,14 +127,4 @@ $sqltb = "CREATE TABLE IF NOT EXISTS transaction (
 $con = null ;
 
 
-
-
-
-
-
-
-
-
-
-
 ?>
