@@ -1,75 +1,40 @@
 <?php
 
-class Permission {
-    private $id;
-    private $name;
-    private $description;
+require_once("db.php");
 
-    // Constructor
-    public function __construct($id, $name, $description) {
-        $this->id = $id;
-        $this->name = $name;
-        $this->description = $description;
+class Permission extends Database {
+
+    public function search($role, $permission) {
+        $db = $this->connect();
+
+        try {
+            $sql = "SELECT permission.name FROM permission
+                    JOIN permissionOfRole ON permission.id = permissionOfRole.permission_id
+                    JOIN role ON permissionOfRole.role_id = role.name
+                    WHERE role.name = :role AND permission.name = :permission";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(":role", $role);
+            $stmt->bindParam(":permission", $permission);
+            $stmt->execute();
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $data;
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Getters and setters for properties
+    public function check($role, $permission) {
 
-    public function getId() {
-        return $this->id;
-    }
-
-    public function getName() {
-        return $this->name;
-    }
-
-    public function getDescription() {
-        return $this->description;
-    }
-
-    // Methods for CRUD operations
-
-    // Create
-    public static function create($name, $description) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("INSERT INTO permission (name, description) VALUES (:name, :description)");
-        $stmt->bindParam(':name', $name);
-        $stmt->bindParam(':description', $description);
-
-        return $stmt->execute();
-    }
-
-    // Read
-    public static function getById($id) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("SELECT * FROM permission WHERE id = :id");
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Update
-    public function update() {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("UPDATE permission SET name = :name, description = :description WHERE id = :id");
-        $stmt->bindParam(':name', $this->name);
-        $stmt->bindParam(':description', $this->description);
-        $stmt->bindParam(':id', $this->id);
-
-        return $stmt->execute();
-    }
-
-    // Delete
-    public function delete() {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("DELETE FROM permission WHERE id = :id");
-        $stmt->bindParam(':id', $this->id);
-
-        return $stmt->execute();
+        try {
+            $data = $this->search($role, $permission);
+            if ($data["name"] != $permission) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 }
 

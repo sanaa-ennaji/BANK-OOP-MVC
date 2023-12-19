@@ -1,83 +1,118 @@
 <?php
 
-class Transaction {
-    private $id;
-    private $type;
-    private $amount;
-    private $compteCourantId;  // Assuming compte_courant_id is the foreign key linking to the compte_courant table
+require_once("db.php");
 
-    // Constructor
-    public function __construct($id, $type, $amount, $compteCourantId) {
-        $this->id = $id;
-        $this->type = $type;
-        $this->amount = $amount;
-        $this->compteCourantId = $compteCourantId;
+class Transaction extends Database {
+
+    public function add($id, $type, $amount, $account_id) {
+        try {
+            $sql = "INSERT INTO transaction VALUES (:id, :type, :amount, :account_id)";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->bindParam(":type", $type);
+            $stmt->bindParam(":amount", $amount);
+            $stmt->bindParam(":account_id", $account_id); 
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Getters and setters for properties
-
-    public function getId() {
-        return $this->id;
+    public function edit($id, $type, $amount, $account_id) {
+        try {
+            $sql = "UPDATE transaction SET type = :type, amount = :amount, account_id = :account_id WHERE id = :id";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->bindParam(":type", $type);
+            $stmt->bindParam(":amount", $amount);
+            $stmt->bindParam(":account_id", $account_id); 
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    public function getType() {
-        return $this->type;
+    public function display() {
+        try {
+            $sql = "SELECT * FROM transaction";
+            $query = $this->connect()->query($sql);
+            $data = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $data;
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    public function getAmount() {
-        return $this->amount;
+    public function search($id) {
+        try {
+            $sql = "SELECT * FROM transaction WHERE id = :id";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->execute();
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $data;
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    public function getCompteCourantId() {
-        return $this->compteCourantId;
+    public function delete($id) {
+        try {
+            $sql = "DELETE FROM transaction WHERE id = :id";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Methods for CRUD operations
+    public function totalRecords(){
+        $db = $this->connect();
 
-    // Create
-    public static function create($type, $amount, $compteCourantId) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("INSERT INTO transaction (type, amount, compte_courant_id) VALUES (:type, :amount, :compteCourantId)");
-        $stmt->bindParam(':type', $type);
-        $stmt->bindParam(':amount', $amount);
-        $stmt->bindParam(':compteCourantId', $compteCourantId);
-
-        return $stmt->execute();
+        try {
+            $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM transaction ");
+            $stmt->execute();
+            $records = $stmt->fetch();
+            $data = $records['allcount'];
+            return $data;
+        } catch (PDOException $e){
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Read
-    public static function getById($id) {
-        $db = Database::getInstance()->getConnection();
+    public function totalRecordwithFilter($searchQuery, $searchArray){
+        $db = $this->connect();
 
-        $stmt = $db->prepare("SELECT * FROM transaction WHERE id = :id");
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $db->prepare("SELECT COUNT(*) AS allcount FROM transaction WHERE 1 ".$searchQuery);
+            $stmt->execute($searchArray);
+            $records = $stmt->fetch();
+            $data = $records['allcount'];
+            return $data;
+        } catch (PDOException $e){
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Update
-    public function update() {
-        $db = Database::getInstance()->getConnection();
+    public function filteredRecordwithSorting($searchQuery, $searchArray, $columnName, $columnSortOrder, $row, $rowperpage){
+        $db = $this->connect();
 
-        $stmt = $db->prepare("UPDATE transaction SET type = :type, amount = :amount, compte_courant_id = :compteCourantId WHERE id = :id");
-        $stmt->bindParam(':type', $this->type);
-        $stmt->bindParam(':amount', $this->amount);
-        $stmt->bindParam(':compteCourantId', $this->compteCourantId);
-        $stmt->bindParam(':id', $this->id);
+        try {
+            $stmt = $db->prepare("SELECT * FROM transaction WHERE 1 ".$searchQuery." ORDER BY ".$columnName." ".$columnSortOrder." LIMIT :limit,:offset");
 
-        return $stmt->execute();
-    }
+            foreach ($searchArray as $key=>$search) {
+                $stmt->bindValue(':'.$key, $search,PDO::PARAM_STR);
+            }
 
-    // Delete
-    public function delete() {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("DELETE FROM transaction WHERE id = :id");
-        $stmt->bindParam(':id', $this->id);
-
-        return $stmt->execute();
+            $stmt->bindValue(':limit', (int)$row, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$rowperpage, PDO::PARAM_INT);
+            $stmt->execute();
+            $data = $stmt->fetchAll();
+            return $data;
+        } catch (PDOException $e){
+            die("Error: " . $e->getMessage());
+        }
     }
 }
 

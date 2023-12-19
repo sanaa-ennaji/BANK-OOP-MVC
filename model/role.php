@@ -1,68 +1,46 @@
 <?php
 
-class Role {
-    private $name;
+require_once("db.php");
 
-    // Constructor
-    public function __construct($name) {
-        $this->name = $name;
+class Role extends Database {
+
+    public function add($name) {
+        $db = $this->connect();
+
+        try {
+            $sql = "INSERT INTO role VALUES (:name)";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(":name", $name);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Getter and setter for property
+      public function display() {
+        $db = $this->connect();
 
-    public function getName() {
-        return $this->name;
+        try {
+            $sql = "SELECT name FROM role";
+            $query = $db->query($sql);
+            $data = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $data;
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Methods for CRUD operations
+    public function delete($name) {
+        $db = $this->connect();
 
-    // Create
-    public static function create($name) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("INSERT INTO role (name) VALUES (:name)");
-        $stmt->bindParam(':name', $name);
-
-        return $stmt->execute();
-    }
-
-    // Read
-    public static function getByName($name) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("SELECT * FROM role WHERE name = :name");
-        $stmt->bindParam(':name', $name);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Update
-    public function update() {
-        // Since role names are typically constant, you may not need to update them
-        // This method is included for completeness
-        // You might want to throw an exception or handle this case differently
-
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("UPDATE role SET name = :name WHERE name = :currentName");
-        $stmt->bindParam(':name', $this->name);
-        $stmt->bindParam(':currentName', $this->name);
-
-        return $stmt->execute();
-    }
-
-    // Delete
-    public function delete() {
-        // Deleting a role might have implications on the application's logic and security
-        // You might want to handle this case differently
-
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("DELETE FROM role WHERE name = :name");
-        $stmt->bindParam(':name', $this->name);
-
-        return $stmt->execute();
+        try {
+            $sql = "DELETE FROM role WHERE name = :name";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 }
 

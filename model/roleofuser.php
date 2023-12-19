@@ -1,75 +1,53 @@
 <?php
 
-class RoleOfUser {
-    private $id;
-    private $roleId;
-    private $userId;
+require_once("db.php");
 
-    // Constructor
-    public function __construct($id, $roleId, $userId) {
-        $this->id = $id;
-        $this->roleId = $roleId;
-        $this->userId = $userId;
+class RoleOfUser extends Database {
+
+    public function add($id, $user, $role) {
+        try {
+            $sql = "INSERT INTO roleOfUser VALUES (:id, :role, :user)";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->bindParam(":user", $user);
+            $stmt->bindParam(":role", $role);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    // Getters and setters for properties
-
-    public function getId() {
-        return $this->id;
+    public function display() {
+        try {
+            $sql = "SELECT * FROM roleOfUser";
+            $query = $this->connect()->query($sql);
+            $data = $query->fetchAll(PDO::FETCH_ASSOC);
+            return $data;
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    public function getRoleId() {
-        return $this->roleId;
+    public function delete($id) {
+        try {
+            $sql = "DELETE FROM roleOfUser WHERE id = :id";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $id);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 
-    public function getUserId() {
-        return $this->userId;
-    }
-
-    // Methods for CRUD operations
-
-    // Create
-    public static function create($roleId, $userId) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("INSERT INTO roleOfUser (role_id, user_id) VALUES (:roleId, :userId)");
-        $stmt->bindParam(':roleId', $roleId);
-        $stmt->bindParam(':userId', $userId);
-
-        return $stmt->execute();
-    }
-
-    // Read
-    public static function getById($id) {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("SELECT * FROM roleOfUser WHERE id = :id");
-        $stmt->bindParam(':id', $id);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Update
-    public function update() {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("UPDATE roleOfUser SET role_id = :roleId, user_id = :userId WHERE id = :id");
-        $stmt->bindParam(':roleId', $this->roleId);
-        $stmt->bindParam(':userId', $this->userId);
-        $stmt->bindParam(':id', $this->id);
-
-        return $stmt->execute();
-    }
-
-    // Delete
-    public function delete() {
-        $db = Database::getInstance()->getConnection();
-
-        $stmt = $db->prepare("DELETE FROM roleOfUser WHERE id = :id");
-        $stmt->bindParam(':id', $this->id);
-
-        return $stmt->execute();
+    public function deleteAll($user) {
+        try {
+            $sql = "DELETE FROM roleOfUser WHERE user_id = :id";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->bindParam(":id", $user);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
+        }
     }
 }
 
