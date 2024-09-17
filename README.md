@@ -47,4 +47,3 @@ La programmation orientée objet est un paradigme qui utilise des concepts tels 
 - **Classe Abstraite :** Classe qui ne peut pas être instanciée elle-même et qui sert souvent de modèle pour d'autres classes.
 - **Visibilité (public, private, protected) :** Niveaux d'accès aux membres d'une classe, contrôlant leur visibilité depuis l'extérieur de la classe.
 
-La maîtrise de ces concepts permet aux développeurs de concevoir des systèmes logiciels plus flexibles, modulaires et faciles à entretenir.
